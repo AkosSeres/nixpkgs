@@ -2,11 +2,16 @@
   fetchFromGitHub,
   fontconfig,
   lib,
+  libx11,
   libxcb,
+  libxcursor,
+  libxi,
+  libxrandr,
   libxkbcommon,
   makeBinaryWrapper,
   pkg-config,
   rustPlatform,
+  stdenv,
   systemdLibs,
   vulkan-loader,
   wayland,
@@ -30,9 +35,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     makeBinaryWrapper
   ];
 
-  buildInputs = [
+  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     fontconfig
+    libx11
     libxcb
+    libxcursor
+    libxi
+    libxrandr
     libxkbcommon
     systemdLibs
     vulkan-loader
@@ -44,10 +53,27 @@ rustPlatform.buildRustPackage (finalAttrs: {
   # will be changed when tests are introduced
   doCheck = false;
 
-  postFixup = ''
+  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
+    NIX_LDFLAGS = toString [
+      "-framework AppKit"
+      "-framework CoreAudio"
+      "-framework CoreFoundation"
+      "-framework CoreGraphics"
+      "-framework Foundation"
+      "-framework IOKit"
+      "-framework Metal"
+      "-framework QuartzCore"
+    ];
+  };
+
+  postFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
     wrapProgram $out/bin/ratty \
       --set LD_LIBRARY_PATH "${
         lib.makeLibraryPath [
+          libx11
+          libxcursor
+          libxi
+          libxrandr
           libxkbcommon
           vulkan-loader
           wayland
@@ -64,7 +90,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     changelog = "https://github.com/orhun/ratty/blob/main/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ poz ];
-    platforms = lib.platforms.linux;
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "ratty";
   };
 })
