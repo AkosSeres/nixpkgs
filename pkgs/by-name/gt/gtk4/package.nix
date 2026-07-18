@@ -36,7 +36,6 @@
   libxkbcommon,
   libpng,
   libtiff,
-  librsvg,
   libjpeg,
   libxml2,
   gnome,
@@ -61,6 +60,7 @@
   compileSchemas ? stdenv.hostPlatform.emulatorAvailable buildPackages,
   cups,
   libexecinfo,
+  llvmPackages,
   broadwaySupport ? true,
   testers,
   darwinMinVersionHook,
@@ -77,7 +77,7 @@ in
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "gtk4";
-  version = "4.20.3";
+  version = "4.22.4";
 
   outputs = [
     "out"
@@ -93,14 +93,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = fetchurl {
     url = "mirror://gnome/sources/gtk/${lib.versions.majorMinor finalAttrs.version}/gtk-${finalAttrs.version}.tar.xz";
-    hash = "sha256-KHPykDCIpmxxFz6i7YX/riZqZrlyw6SEK7svbxh+wVM=";
+    hash = "sha256-Ub2fYMfSOmZaVWxzZMIfsuTiglZrPn4JJFXo+RAzCJM=";
   };
 
-  # TODO: make it unconditional on rebuild, drop on version >= 4.20.4
-  patches = lib.optional stdenv.hostPlatform.is32bit (fetchpatch {
-    url = "https://gitlab.gnome.org/GNOME/gtk/-/commit/3b7ed49f26700c65fa9c6f41cf40d4fd5f921756.diff";
-    hash = "sha256-P6cE7fnR5W+H0EWQWJ3hYSu4MwMygPIfS6e0IiXlQv8=";
-  });
+  patches = [
+    (fetchpatch {
+      name = "fix-32bit-VkImage-null.patch";
+      url = "https://gitlab.gnome.org/GNOME/gtk/-/commit/10d43de8f4f942cb591ada3103474bd7213425f1.patch";
+      hash = "sha256-DJIL6M3XcsjBoMO77OxNi84d1DxAphAfot3N7Nq1QqQ=";
+    })
+  ];
 
   depsBuildBuild = [
     pkg-config
@@ -118,6 +120,7 @@ stdenv.mkDerivation (finalAttrs: {
     sassc
     gi-docgen
     libxml2 # for xmllint
+    shared-mime-info
   ]
   ++ lib.optionals (compileSchemas && !stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
     mesonEmulatorHook
@@ -128,13 +131,16 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals vulkanSupport [
     shaderc # for glslc
   ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    # TODO: Remove when NixOS/nixpkgs#536365 reaches master.
+    llvmPackages.lld
+  ]
   ++ finalAttrs.setupHooks;
 
   buildInputs = [
     libxkbcommon
     libpng
     libtiff
-    librsvg
     libjpeg
     (libepoxy.override { inherit x11Support; })
     isocodes
@@ -220,6 +226,10 @@ stdenv.mkDerivation (finalAttrs: {
   }
   // lib.optionalAttrs stdenv.hostPlatform.isMusl {
     NIX_LDFLAGS = "-lexecinfo";
+  }
+  // lib.optionalAttrs stdenv.hostPlatform.isDarwin {
+    # TODO: Remove when NixOS/nixpkgs#536365 reaches master.
+    NIX_CFLAGS_LINK = "--ld-path=${lib.getExe' llvmPackages.lld "ld64.lld"}";
   };
 
   postPatch = ''

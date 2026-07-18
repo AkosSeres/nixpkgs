@@ -79,7 +79,7 @@ let
   };
   releaseRev = v: "V${v}";
   fetched =
-    import ../../../../build-support/coq/meta-fetch/default.nix
+    import ../../../../build-support/rocq/meta-fetch/default.nix
       {
         inherit
           lib
@@ -100,19 +100,30 @@ let
   coq-version =
     args.coq-version or (if version != "dev" then lib.versions.majorMinor version else "dev");
   coqAtLeast = v: coq-version == "dev" || lib.versionAtLeast coq-version v;
-  buildIde = args.buildIde or (!coqAtLeast "8.14");
-  ideFlags = lib.optionalString (
-    buildIde && !coqAtLeast "8.10"
-  ) "-lablgtkdir ${ocamlPackages.lablgtk}/lib/ocaml/*/site-lib/lablgtk2 -coqide opt";
+  buildIde = args.buildIde or (coqAtLeast "8.10" && !coqAtLeast "8.14");
   csdpPatch = lib.optionalString (csdp != null) ''
     substituteInPlace plugins/micromega/sos.ml --replace "; csdp" "; ${csdp}/bin/csdp"
     substituteInPlace plugins/micromega/coq_micromega.ml --replace "System.is_in_system_path \"csdp\"" "true"
   '';
+  dune =
+    if lib.versions.isEq coq-version "8.20" then
+      args.dune.override { version = "3.21.1"; }
+    else
+      args.dune;
   ocamlPackages =
     if customOCamlPackages != null then
       customOCamlPackages
     else
       lib.switch coq-version [
+        {
+          case = lib.versions.isEq "8.20";
+          out = ocamlPackages_4_14.overrideScope (
+            self: super: {
+              inherit dune;
+              dune_3 = dune;
+            }
+          );
+        }
         {
           case = lib.versions.range "8.16" "9.1";
           out = ocamlPackages_4_14;
@@ -247,17 +258,9 @@ let
       addEnvHooks "$targetOffset" addCoqPath
     '';
 
-    preConfigure =
-      if coqAtLeast "8.10" then
-        ''
-          patchShebangs dev/tools/
-        ''
-      else
-        ''
-          configureFlagsArray=(
-            ${ideFlags}
-          )
-        '';
+    preConfigure = lib.optionalString (coqAtLeast "8.10") ''
+      patchShebangs dev/tools/
+    '';
 
     prefixKey = "-prefix ";
 

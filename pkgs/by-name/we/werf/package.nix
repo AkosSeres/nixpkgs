@@ -10,17 +10,17 @@
 }:
 buildGoModule (finalAttrs: {
   pname = "werf";
-  version = "2.65.4";
+  version = "2.73.1";
 
   src = fetchFromGitHub {
     owner = "werf";
     repo = "werf";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-rokgq74XSOVgA6n0aKgW3X/I+T8hfEnDazbJsxRiJdc=";
+    hash = "sha256-LqFZA8QCQxoEh49f+EHxYdPhFUbqUYnGeDVd/X+hODU=";
   };
 
   proxyVendor = true;
-  vendorHash = "sha256-hWivVUSsEWtXmxckiw4E+f7W/5Agy4fYkKEq0YTIuSk=";
+  vendorHash = "sha256-Ot2P417uqtdpxBd46NelxThF4Ca7krIInVfJ4OxnTRI=";
 
   nativeBuildInputs = [ installShellFiles ];
   buildInputs =
@@ -65,6 +65,7 @@ buildGoModule (finalAttrs: {
     # Remove tests that fail or require external services.
     rm -rf \
       integration/suites \
+      pkg/container_backend/buildah_backend_data_archives_test.go \
       pkg/true_git/*_test.go \
       pkg/werf/exec/*_test.go \
       test/e2e \

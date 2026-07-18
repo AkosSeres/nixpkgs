@@ -8,10 +8,12 @@
 
   # dependencies
   boto3,
-  langchain,
   langchain-core,
   numpy,
   pydantic,
+
+  # tests
+  langchain,
 
   # optional-dependencies
   anthropic,
@@ -29,14 +31,15 @@
 
 buildPythonPackage (finalAttrs: {
   pname = "langchain-aws";
-  version = "1.4.5";
+  version = "1.6.2";
   pyproject = true;
+  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "langchain-ai";
     repo = "langchain-aws";
     tag = "langchain-aws==${finalAttrs.version}";
-    hash = "sha256-ok8rCSzvjKR2Sr6XCdmULWyySkJ4Jdy3+LzKSOzUMlE=";
+    hash = "sha256-MFlC9/9ZC1b5jAkvLRy2alcSYU5+KETJ6rIW05nLR5I=";
   };
 
   postPatch = ''
@@ -50,7 +53,6 @@ buildPythonPackage (finalAttrs: {
 
   dependencies = [
     boto3
-    langchain
     langchain-core
     numpy
     pydantic
@@ -62,14 +64,14 @@ buildPythonPackage (finalAttrs: {
   ];
 
   optional-dependencies = {
-    anthropic = [
-      anthropic.optional-dependencies.bedrock
+    anthropic = anthropic.optional-dependencies.bedrock ++ [
       langchain-anthropic
     ];
   };
 
   nativeCheckInputs = [
     anthropic
+    langchain
     langchain-tests
     pytest-asyncio
     pytest-cov-stub
@@ -91,6 +93,7 @@ buildPythonPackage (finalAttrs: {
     skipBulkUpdate = true;
     updateScript = gitUpdater {
       rev-prefix = "langchain-aws==";
+      ignoredVersions = "a|b|dev|rc";
     };
   };
 

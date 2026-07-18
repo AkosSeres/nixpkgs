@@ -15,14 +15,13 @@
 
   ## wandb
   buildPythonPackage,
-  replaceVars,
 
   # build-system
   hatchling,
 
   # dependencies
   click,
-  gitpython,
+  packaging,
   platformdirs,
   protobuf,
   pydantic,
@@ -30,19 +29,18 @@
   requests,
   sentry-sdk,
   setproctitle,
-  setuptools,
   pythonOlder,
   typing-extensions,
 
   # tests
-  pytestCheckHook,
-  azure-core,
   azure-containerregistry,
+  azure-core,
   azure-identity,
   azure-storage-blob,
   bokeh,
   boto3,
   cloudpickle,
+  cwsandbox,
   flask,
   google-cloud-artifact-registry,
   google-cloud-compute,
@@ -51,7 +49,9 @@
   jsonschema,
   kubernetes,
   kubernetes-asyncio,
+  looptime,
   matplotlib,
+  moto,
   moviepy,
   pandas,
   parameterized,
@@ -64,6 +64,7 @@
   pytest-mock,
   pytest-timeout,
   pytest-xdist,
+  pytestCheckHook,
   rdkit,
   responses,
   scikit-learn,
@@ -75,12 +76,12 @@
 }:
 
 let
-  version = "0.26.1";
+  version = "0.28.1";
   src = fetchFromGitHub {
     owner = "wandb";
     repo = "wandb";
     tag = "v${version}";
-    hash = "sha256-QtMjiRqE9ZhA1S8gHt1F8NBXTq7QQ3ENhk02Lry80F4=";
+    hash = "sha256-yXsSHyPOh3QXRRkTL4Rj8lLuFjp1LIKfPiacy4+obAk=";
   };
 
   wandb-xpu = rustPlatform.buildRustPackage {
@@ -90,7 +91,7 @@ let
 
     sourceRoot = "${src.name}/xpu";
 
-    cargoHash = "sha256-RPvtMV9Mrzb6lJhMR+fi58h/ncvbNkbIjAP35sdaOO0=";
+    cargoHash = "sha256-vB0LZjfnf//U1BXCzvaQBjlXLlGx/4g+emSZWcS+oGU=";
 
     checkFlags = [
       # fails in sandbox
@@ -120,13 +121,15 @@ let
 
     sourceRoot = "${src.name}/parquet-rust-wrapper";
 
-    cargoHash = "sha256-w98wliTcVJr4IlmKFVU+glmawMJl5qVCSUSJ8LeceJ8=";
+    cargoHash = "sha256-BkeSRbZoehYGHj15KcInugRBvOLXJlh1NqTHhRnNOK8=";
 
     # The original build script renames the library:
     # https://github.com/wandb/wandb/blob/v0.26.0/parquet-rust-wrapper/build.sh#L37-L68
     postInstall = ''
       mv $out/lib/libarrow_rs_wrapper${sharedLibrary} $out/lib/${libRustParquet}
     '';
+
+    __darwinAllowLocalNetworking = true;
   };
 
   wandb-core = buildGoModule {
@@ -136,8 +139,15 @@ let
     sourceRoot = "${src.name}/core";
 
     postPatch =
-      # hardcode the `wandb-xpu` binary path.
+      # Relax the Go toolchain requirement; nixpkgs ships 1.26.2.
       ''
+        substituteInPlace go.mod \
+          --replace-fail \
+            "go 1.26.4" \
+            "go 1.26.2"
+      ''
+      # hardcode the `wandb-xpu` binary path.
+      + ''
         substituteInPlace internal/monitor/xpuresourcemanager.go \
           --replace-fail \
             'cmdPath, err := getXPUCmdPath()' \
@@ -187,13 +197,6 @@ buildPythonPackage (finalAttrs: {
 
   inherit src version;
 
-  patches = [
-    # Replace git paths
-    (replaceVars ./hardcode-git-path.patch {
-      git = lib.getExe gitMinimal;
-    })
-  ];
-
   postPatch =
     # Prevent hatch from building wandb-core and arrow-rs-wrapper
     ''
@@ -207,6 +210,13 @@ buildPythonPackage (finalAttrs: {
         --replace-fail \
           'bin_path = pathlib.Path(__file__).parent / "bin" / "wandb-core"' \
           'bin_path = pathlib.Path("${lib.getExe wandb-core}")'
+    ''
+    # Hard-code the path to git in the python code
+    + ''
+      substituteInPlace wandb/cli/cli.py \
+        --replace-fail \
+          '["git", "apply",' \
+          '["${lib.getExe gitMinimal}", "apply",' \
     '';
 
   env = {
@@ -224,7 +234,7 @@ buildPythonPackage (finalAttrs: {
 
   dependencies = [
     click
-    gitpython
+    packaging
     platformdirs
     protobuf
     pydantic
@@ -232,8 +242,6 @@ buildPythonPackage (finalAttrs: {
     requests
     sentry-sdk
     setproctitle
-    # setuptools is necessary since pkg_resources is required at runtime.
-    setuptools
   ]
   ++ lib.optionals (pythonOlder "3.12") [
     typing-extensions
@@ -242,15 +250,16 @@ buildPythonPackage (finalAttrs: {
   __darwinAllowLocalNetworking = true;
 
   nativeCheckInputs = [
-    pytestCheckHook
-    azure-core
     azure-containerregistry
+    azure-core
     azure-identity
     azure-storage-blob
     bokeh
     boto3
     cloudpickle
+    cwsandbox
     flask
+    gitMinimal
     google-cloud-artifact-registry
     google-cloud-compute
     google-cloud-storage
@@ -258,7 +267,9 @@ buildPythonPackage (finalAttrs: {
     jsonschema
     kubernetes
     kubernetes-asyncio
+    looptime
     matplotlib
+    moto
     moviepy
     pandas
     parameterized
@@ -271,11 +282,13 @@ buildPythonPackage (finalAttrs: {
     pytest-mock
     pytest-timeout
     pytest-xdist
+    pytestCheckHook
     rdkit
     responses
     scikit-learn
     soundfile
     tenacity
+    versionCheckHook
     torch
     torchvision
     tqdm
@@ -432,9 +445,10 @@ buildPythonPackage (finalAttrs: {
   meta = {
     description = "CLI and library for interacting with the Weights and Biases API";
     homepage = "https://github.com/wandb/wandb";
-    changelog = "https://github.com/wandb/wandb/raw/${finalAttrs.version}/CHANGELOG.md";
+    changelog = "https://github.com/wandb/wandb/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ samuela ];
+    mainProgram = "wandb";
     broken = wandb-xpu.meta.broken || wandb-core.meta.broken;
   };
 })

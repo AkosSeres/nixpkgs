@@ -28,20 +28,22 @@
   pandas,
   pillow,
   polars,
+  psutil,
   pytestCheckHook,
   tqdm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pylance";
-  version = "6.0.0";
+  version = "8.0.0";
   pyproject = true;
+  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "lancedb";
     repo = "lance";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-clvpPC8W6T1GkLE7DwRQ8HPexyE9rvFhCFc+SxqDPGk=";
+    hash = "sha256-pxggvF23u3Wfm6YdaHwbDUZDUwtJ4tOaTLViUfGZ0B8=";
   };
 
   sourceRoot = "${finalAttrs.src.name}/python";
@@ -53,7 +55,7 @@ buildPythonPackage (finalAttrs: {
       src
       sourceRoot
       ;
-    hash = "sha256-Icl4BCBfTi6WkV3sZlyocZ0WYcXa28WJQ2w5VdhiVAU=";
+    hash = "sha256-VSy1cOshPLAic+1HkTGiavdNRffiEVAlWThNeebJSyg=";
   };
 
   nativeBuildInputs = [
@@ -93,6 +95,7 @@ buildPythonPackage (finalAttrs: {
     pandas
     pillow
     polars
+    psutil
     pytestCheckHook
     tqdm
   ]
@@ -134,6 +137,7 @@ buildPythonPackage (finalAttrs: {
     "test_lance_log_file"
     "test_lance_log_file_invalid_path"
     "test_lance_log_file_with_directory_creation"
+    "test_lance_log_filters_trace_event_targets"
     "test_timestamp_precision"
     "test_tracing"
 
@@ -161,19 +165,6 @@ buildPythonPackage (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     # Build hangs after all the tests are run due to a torch subprocess not exiting
     "test_multiprocess_loading"
-
-    # torch._inductor.exc.InductorError: CppCompileError: C++ compile error
-    # OpenMP support not found
-    # TODO: figure out why this only happens on python 3.13 and not 3.14
-    "test_cosine_distance"
-    "test_ground_truth"
-    "test_index_cast_centroids"
-    "test_index_with_no_centroid_movement"
-    "test_l2_distance"
-    "test_l2_distance_f16_bf16_cpu"
-    "test_pairwise_cosine"
-    "test_torch_index_with_nans"
-    "test_torch_kmeans_nans"
   ]
   ++ lib.optionals (pythonAtLeast "3.14") [
     # RuntimeError: torch.compile is not supported on Python 3.14+

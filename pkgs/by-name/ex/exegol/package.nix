@@ -21,6 +21,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   pythonRelaxDeps = [
     "argcomplete"
+    "cryptography"
+    "pydantic"
     "requests"
     "rich"
     "supabase"

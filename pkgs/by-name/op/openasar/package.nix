@@ -14,13 +14,13 @@
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "openasar";
-  version = "0-unstable-2026-04-18";
+  version = "0-unstable-2026-07-12";
 
   src = fetchFromGitHub {
     owner = "GooseMod";
     repo = "OpenAsar";
-    rev = "6232c4f44ddf26d1256ae201aa539eadccd71b24";
-    hash = "sha256-ktS0aqv9BSFuZ44A1ux3QsXAHO5z7B33psaJ3Q7+nYk=";
+    rev = "5a05f49043d169fe0832e5c5a2e74d08a06f0bd3";
+    hash = "sha256-fVOoqdnD2PKmpJKIzjFcGNa5Yg73CvzDH4Y1fu11xVE=";
   };
 
   postPatch = ''

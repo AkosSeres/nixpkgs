@@ -12,7 +12,7 @@
 
 buildGoModule (finalAttrs: {
   pname = "sops";
-  version = "3.13.0";
+  version = "3.13.2";
 
   __structuredAttrs = true;
 
@@ -20,10 +20,10 @@ buildGoModule (finalAttrs: {
     owner = "getsops";
     repo = finalAttrs.pname;
     tag = "v${finalAttrs.version}";
-    hash = "sha256-sJAK7iCVmjGAjQ0CBVsJI7L/GwHB9bvm354Cq3WQI1M=";
+    hash = "sha256-en4MsPwqLRi8jlwuzWHgJ+ns42cBXuCzGbnZyGK9Vhk=";
   };
 
-  vendorHash = "sha256-aBHZPh5ib2BOxoHQH6q8GD/EJOb2x1OBBePicwoI6Gc=";
+  vendorHash = "sha256-qBtVnRJK/E545yTUwYXauVFBcpV8mUSxmush5vQMMrs=";
 
   subPackages = [ "cmd/sops" ];
 

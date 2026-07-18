@@ -6,13 +6,13 @@
 
 buildGoModule (finalAttrs: {
   pname = "air";
-  version = "1.65.1";
+  version = "1.66.0";
 
   src = fetchFromGitHub {
     owner = "air-verse";
     repo = "air";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-omyWDW5bE+HfXQ2EQZKthB9t+jBEFcPSVtPss5qeoMI=";
+    hash = "sha256-1JKzskbxLaCNRRXBjHwmYGJVLhIU6aO9IS7KD65SgwQ=";
   };
 
   vendorHash = "sha256-03xZ3P/7xjznYdM9rv+8ZYftQlnjJ6ZTq0HdSvGpaWw=";
@@ -30,6 +30,6 @@ buildGoModule (finalAttrs: {
     mainProgram = "air";
     homepage = "https://github.com/air-verse/air";
     license = lib.licenses.gpl3Only;
-    maintainers = [ ];
+    maintainers = with lib.maintainers; [ miniharinn ];
   };
 })

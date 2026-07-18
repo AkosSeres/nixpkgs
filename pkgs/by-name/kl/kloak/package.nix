@@ -12,17 +12,18 @@
   libinput,
   wayland,
   libxkbcommon,
+  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "kloak";
-  version = "0.7.8-1";
+  version = "0.8.5-1";
 
   src = fetchFromGitHub {
     owner = "Whonix";
     repo = "kloak";
     tag = finalAttrs.version;
-    hash = "sha256-V9t7fQ3K5OIWKhvFiX5Hsf0WzAQUWiZojgbjc38Z1Nk=";
+    hash = "sha256-fDmqA00b5ESS9LW2QIeEx3wWb0lhgkqoBYcw1XYDI7k=";
   };
 
   strictDeps = true;
@@ -54,6 +55,8 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Privacy tool for anonymizing keyboard and mouse use";

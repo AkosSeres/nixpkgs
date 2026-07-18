@@ -6,22 +6,24 @@
   sqlite,
   installShellFiles,
   makeWrapper,
+  xandikos,
+  cacert,
   versionCheckHook,
   nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "pimsync";
-  version = "0.5.7";
+  version = "0.5.10";
 
   src = fetchFromSourcehut {
     owner = "~whynothugo";
     repo = "pimsync";
     rev = "v${finalAttrs.version}";
-    hash = "sha256-6glyZZ79tMaR0VckKNMew1+x7/SU4V93/to6PWaiIHU=";
+    hash = "sha256-YqLOkv0I+1HOlWNA8HoKB6/3ccYbV8u/0BJ/+4xvde4=";
   };
 
-  cargoHash = "sha256-TiywSVcNqnshkmDovQDY03tM6v8AMOfwzI/SLOlEXHw=";
+  cargoHash = "sha256-9sEYeKZDMsbEUQc5V8xJzcKIzF6ugGsk3d5bTOCtYnw=";
 
   env.PIMSYNC_VERSION = finalAttrs.version;
 
@@ -33,6 +35,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   buildInputs = [
     sqlite
+  ];
+
+  nativeCheckInputs = [
+    xandikos
+    cacert
   ];
 
   postInstall = ''
@@ -56,7 +63,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     }";
     license = lib.licenses.eupl12;
     platforms = lib.platforms.unix;
-    maintainers = [ lib.maintainers.qxrein ];
+    maintainers = [
+      lib.maintainers.qxrein
+      lib.maintainers.antonmosich
+    ];
     mainProgram = "pimsync";
   };
 })

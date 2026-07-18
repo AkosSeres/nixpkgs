@@ -108,7 +108,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=tests::no_segfault_after_failed_compilation"
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    # Test Panics only on Darwin, see:
+    # Another sandbox failing test, see:
     # https://github.com/tectonic-typesetting/tectonic/issues/1352
     "--skip=v2_watch_succeeds"
   ];
@@ -125,7 +125,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Modernized, complete, self-contained TeX/LaTeX engine, powered by XeTeX and TeXLive";
     homepage = "https://tectonic-typesetting.github.io/";
     changelog = "https://github.com/tectonic-typesetting/tectonic/blob/tectonic@${finalAttrs.version}/CHANGELOG.md";
-    license = with lib.licenses; [ mit ];
+    license = lib.licenses.mit;
     mainProgram = "tectonic";
     maintainers = with lib.maintainers; [
       lluchs

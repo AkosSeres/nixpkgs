@@ -11,13 +11,13 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "llhttp";
-  version = "9.3.1";
+  version = "9.4.2";
 
   src = fetchFromGitHub {
     owner = "nodejs";
     repo = "llhttp";
     tag = "release/v${finalAttrs.version}";
-    hash = "sha256-eHy8sjmfLA+q1WWuo4bkZ0wRI4q9fkNaW8c2OgKv/MM=";
+    hash = "sha256-LS8HS8CnXJ3X8WlIvtxBLc0h1wLL/HmTqZWHlvBjTEo=";
   };
 
   outputs = [
