@@ -1,0 +1,75 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index e49db24..dc563ce 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -13,0 +14,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
++find_package(PkgConfig REQUIRED)
++pkg_check_modules(libusb REQUIRED IMPORTED_TARGET libusb-1.0)
++find_package(hidapi CONFIG REQUIRED)
++find_package(loguru CONFIG REQUIRED)
++find_package(nlohmann_json CONFIG REQUIRED)
++
+diff --git a/AlienFX-SDK/CMakeLists.txt b/AlienFX-SDK/CMakeLists.txt
+index 4c831bd..ee85c40 100644
+--- a/AlienFX-SDK/CMakeLists.txt
++++ b/AlienFX-SDK/CMakeLists.txt
+@@ -9,43 +8,0 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+-include(FetchContent)
+-set(BUILD_SHARED_LIBS OFF)
+-
+-# ----------- LIBUSB ------------
+-
+-FetchContent_Declare(
+-  libusb
+-  GIT_REPOSITORY https://github.com/libusb/libusb-cmake.git
+-  GIT_TAG main
+-  GIT_SHALLOW TRUE)
+-FetchContent_MakeAvailable(libusb)
+-
+-# ----------- LOGURU ------------
+-
+-FetchContent_Declare(
+-  LoguruGitRepo
+-  GIT_REPOSITORY https://github.com/emilk/loguru.git
+-  GIT_TAG master
+-  GIT_SHALLOW TRUE)
+-set(LOGURU_WITH_STREAMS ON)
+-FetchContent_MakeAvailable(LoguruGitRepo)
+-
+-# ----------- HIDAPI ------------
+-
+-set(HIDAPI_WITH_LIBUSB ON)
+-set(HIDAPI_WITH_HIDRAW OFF)
+-
+-FetchContent_Declare(
+-  hidapi
+-  GIT_REPOSITORY https://github.com/libusb/hidapi.git
+-  GIT_TAG master
+-  GIT_SHALLOW TRUE)
+-FetchContent_MakeAvailable(hidapi)
+-
+-# target_compile_definitions(${tgt} PRIVATE _GNU_SOURCE)
+-
+-# ----------- JSON ------------
+-FetchContent_Declare(
+-  json
+-  GIT_REPOSITORY https://github.com/nlohmann/json.git
+-  GIT_TAG master
+-  GIT_SHALLOW TRUE)
+-FetchContent_MakeAvailable(json)
+@@ -65 +21 @@ target_include_directories(AlienFX_SDK
+-target_link_libraries(AlienFX_SDK PUBLIC usb-1.0 hidapi::libusb loguru::loguru
++target_link_libraries(AlienFX_SDK PUBLIC PkgConfig::libusb hidapi::libusb loguru::loguru
+diff --git a/alienfx-cli/CMakeLists.txt b/alienfx-cli/CMakeLists.txt
+index 8c4d431..5b72a6e 100644
+--- a/alienfx-cli/CMakeLists.txt
++++ b/alienfx-cli/CMakeLists.txt
+@@ -8,7 +8 @@ add_compile_definitions(VERSION="${PROJECT_VERSION}")
+-include(FetchContent)
+-
+-FetchContent_Declare(
+-  CLI11
+-  GIT_TAG main
+-  GIT_REPOSITORY https://github.com/CLIUtils/CLI11.git)
+-FetchContent_MakeAvailable(CLI11)
++find_package(CLI11 CONFIG REQUIRED)
